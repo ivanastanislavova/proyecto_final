@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: parkings-api-config
+  labels:
+    app: parkings-api
+data:
+  SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/parking_db
+  SPRING_DATA_MONGODB_HOST: mongodb
+  SPRING_DATA_MONGODB_PORT: "27017"
+  SPRING_DATA_MONGODB_DATABASE: ayuntamiento_db
+  AUTH_SERVICE_URL: http://autenticacion-api:9099
+  PARKING_AUTH_SUBJECT: "1"
+  PARKING_AUTH_ROLE: ROLE_APARCAMIENTOS
+  SERVER_PORT: "9090"

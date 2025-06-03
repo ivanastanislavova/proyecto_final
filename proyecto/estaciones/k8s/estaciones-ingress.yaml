@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: estaciones-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /estaciones-api/
+            pathType: Prefix
+            backend:
+              service:
+                name: estaciones-api
+                port:
+                  number: 9091

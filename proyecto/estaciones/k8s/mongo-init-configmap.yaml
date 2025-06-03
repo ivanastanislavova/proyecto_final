@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: estaciones-mongo-initdb
+data:
+  init.js: |
+    db = db.getSiblingDB("lecturas_aq_database");
+
+    const stations = 8;
+    const now = new Date();
+
+    function addMinutes(date, minutes) {
+    return new Date(date.getTime() + minutes * 60000);
+    }
+
+    const readings = [];
+
+    for (let id_station = 1; id_station <= stations; id_station++) {
+    let baseTime = addMinutes(now, -id_station * 60);
+    for (let i = 0; i < 2; i++) {
+        const timestamp = new Date(baseTime); // tipo Date
+        const id = `${id_station}_${timestamp.toISOString()}`;
+
+        readings.push({
+        id: id,
+        station_id: id_station,
+        timeStamp: timestamp, // almacenado como Date
+        nitricOxides: +(Math.random() * 20).toFixed(1),
+        nitrogenDioxides: +(Math.random() * 10).toFixed(1),
+        VOCs_NMHC: +(Math.random() * 15).toFixed(1),
+        PM2_5: +(Math.random() * 25).toFixed(1)
+        });
+
+        baseTime = addMinutes(baseTime, 15);
+    }
+    }
+
+    db.stationReadings.drop();
+    db.stationReadings.insertMany(readings);
+    db.stationReadings.createIndex({ station_id: 1, timeStamp: 1 }, { unique: true });
+
+    

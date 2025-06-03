@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: mongo_ayuntamiento
+    ports:
+      - "27519:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ayuntamiento_db
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+
+volumes:
+  mongo_data:

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autenticacion-api
+  labels:
+    app: autenticacion-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autenticacion-api
+  template:
+    metadata:
+      labels:
+        app: autenticacion-api
+    spec:
+      containers:
+        - name: autenticacion-api
+          image: isi3/autenticacion-api:latest
+          ports:
+            - containerPort: 9099
+          envFrom:
+            - configMapRef:
+                name: autenticacion-api-config
+            - secretRef:
+                name: autenticacion-api-secret
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: autenticacion-api-config
+                  key: SPRING_DATASOURCE_URL
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: autenticacion-api-secret
+                  key: SPRING_DATASOURCE_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: autenticacion-api-secret
+                  key: SPRING_DATASOURCE_PASSWORD
+            - name: SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: autenticacion-api-config
+                  key: SERVER_PORT

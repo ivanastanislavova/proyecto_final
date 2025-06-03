@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parkings-api
+  labels:
+    app: parkings-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: parkings-api
+  template:
+    metadata:
+      labels:
+        app: parkings-api
+    spec:
+      containers:
+        - name: parkings-api
+          image: isi3/parkings-api:latest
+          ports:
+            - containerPort: 9090
+          envFrom:
+            - configMapRef:
+                name: parkings-api-config
+            - secretRef:
+                name: parkings-api-secret
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: parkings-api-config
+                  key: SPRING_DATASOURCE_URL
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: parkings-api-secret
+                  key: SPRING_DATASOURCE_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: parkings-api-secret
+                  key: SPRING_DATASOURCE_PASSWORD
+            - name: SPRING_DATA_MONGODB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: parkings-api-config
+                  key: SPRING_DATA_MONGODB_HOST
+            - name: SPRING_DATA_MONGODB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: parkings-api-config
+                  key: SPRING_DATA_MONGODB_PORT
+            - name: SPRING_DATA_MONGODB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: parkings-api-config
+                  key: SPRING_DATA_MONGODB_DATABASE
+            - name: AUTH_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: parkings-api-config
+                  key: AUTH_SERVICE_URL
+            - name: PARKING_AUTH_SUBJECT
+              valueFrom:
+                configMapKeyRef:
+                  name: parkings-api-config
+                  key: PARKING_AUTH_SUBJECT
+            - name: PARKING_AUTH_ROLE
+              valueFrom:
+                configMapKeyRef:
+                  name: parkings-api-config
+                  key: PARKING_AUTH_ROLE
+            - name: SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: parkings-api-config
+                  key: SERVER_PORT

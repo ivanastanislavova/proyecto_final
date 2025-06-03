@@ -1,0 +1,67 @@
+version: '3.8'
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-parking
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: parking_db
+      MYSQL_USER: parking
+      MYSQL_PASSWORD: parking1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongo-parking
+    restart: always
+    ports:
+      - "27517:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+
+  autenticacion:
+    image: autenticacion-api:latest
+    build:
+      context: ../autenticacion/autenticacionApp
+      dockerfile: Dockerfile
+    container_name: autenticacion-api
+    ports:
+      - "9099:9099"
+    depends_on:
+      - mysql-db
+      - mongodb
+    environment:
+      # Ajusta estas variables según lo que use tu autenticacionApp
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/parking_db
+      SPRING_DATASOURCE_USERNAME: parking
+      SPRING_DATASOURCE_PASSWORD: parking1234
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/ayuntamiento_db
+
+  parkings-api:
+    image: parkings-api:latest
+    build:
+      context: ./projectApp
+      dockerfile: Dockerfile
+    container_name: parkings-api
+    ports:
+      - "9090:9090"
+    depends_on:
+      - mysql-db
+      - mongodb
+      - autenticacion
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/parking_db
+      SPRING_DATASOURCE_USERNAME: parking
+      SPRING_DATASOURCE_PASSWORD: parking1234
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/ayuntamiento_db
+      AUTH_URL: http://autenticacion:9099/auth/token
+
+volumes:
+  mysql_data:
+  mongo_data:

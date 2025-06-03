@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: estaciones-mongodb
+spec:
+  serviceName: estaciones-mongodb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: estaciones-mongodb
+  template:
+    metadata:
+      labels:
+        app: estaciones-mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:6.0
+          env:
+            - name: MONGO_INITDB_DATABASE
+              value: estacionesdb
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: estaciones-api-secret
+                  key: mongodb-root-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: estaciones-api-secret
+                  key: mongodb-root-password
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-persistent-storage
+              mountPath: /data/db
+            - name: mongo-initdb
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mongo-initdb
+          configMap:
+            name: estaciones-mongo-initdb
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-persistent-storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: local-storage
+        resources:
+          requests:
+            storage: 1Gi

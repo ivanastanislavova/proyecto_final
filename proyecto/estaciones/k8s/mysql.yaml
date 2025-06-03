@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: estaciones-mysql-initdb
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS ESTACION (
+    id SERIAL PRIMARY KEY,
+    direction VARCHAR(255),
+    latitude FLOAT,
+    longitude FLOAT
+    );
+
+    INSERT INTO ESTACION (id, direction, latitude, longitude) VALUES
+    (1, 'Avda. de Francia', 39.4615, -0.3431),
+    (2, 'Pista de Silla', 39.4370, -0.3765),
+    (3, 'Molí del Sol', 39.4789, -0.4056),
+    (4, 'Politècnic', 39.4815, -0.3408),
+    (5, 'Centre', 39.4699, -0.3763),
+    (6, 'Bulevard Sud', 39.4512, -0.3768),
+    (7, 'Vivers', 39.4750, -0.3610),
+    (8, 'Puerto de València', 39.4541, -0.3165);
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: estaciones-mysql
+spec:
+  serviceName: estaciones-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: estaciones-mysql
+  template:
+    metadata:
+      labels:
+        app: estaciones-mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          env:
+            - name: MYSQL_DATABASE
+              value: estacionesdb
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: estaciones-api-secret
+                  key: mysql-root-password
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: estaciones-api-secret
+                  key: mysql-user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: estaciones-api-secret
+                  key: mysql-password
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+            - name: mysql-initdb
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mysql-initdb
+          configMap:
+            name: estaciones-mysql-initdb
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-persistent-storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: local-storage
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: estaciones-mysql
+spec:
+  selector:
+    app: estaciones-mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306

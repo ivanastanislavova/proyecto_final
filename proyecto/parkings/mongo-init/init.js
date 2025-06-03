@@ -1,0 +1,44 @@
+db = db.getSiblingDB("project_database");
+
+const operations = ["rent", "return"];
+
+let currentId = 1;
+const now = new Date();
+
+function addMinutes(date, minutes) {
+  return new Date(date.getTime() + minutes * 60000);
+}
+
+const events = [];
+
+for (let parkingId = 1; parkingId <= 10; parkingId++) {
+  const eventCount = Math.floor(Math.random() * 3) + 2; // 2 a 4 eventos
+  let baseTime = addMinutes(now, -parkingId * 60); // base distinta para cada parking
+  let bikes = 50;
+  let spots = 20;
+
+  for (let i = 0; i < eventCount; i++) {
+    const op = operations[Math.floor(Math.random() * operations.length)];
+
+    if (op === "rent") {
+      bikes = Math.max(bikes - 1, 0);
+      spots++;
+    } else if (op === "return") {
+      bikes++;
+      spots = Math.max(spots - 1, 0);
+    }
+
+    events.push({
+      id: currentId++,
+      parkingId: parkingId,
+      operation: op,
+      bikesAvailable: bikes,
+      freeParkingSpots: spots,
+      timestamp: ISODate(baseTime.toISOString())
+    });
+
+    baseTime = addMinutes(baseTime, 15);
+  }
+}
+
+db.parkingEvents.insertMany(events);

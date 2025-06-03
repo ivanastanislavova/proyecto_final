@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-estacion
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: estacion_db
+      MYSQL_USER: estacion
+      MYSQL_PASSWORD: estacion1234
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongo-estacion
+    restart: always
+    ports:
+      - "27518:27017"
+    volumes: 
+      - mongo_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+
+volumes:
+  mysql_data:
+  mongo_data:
